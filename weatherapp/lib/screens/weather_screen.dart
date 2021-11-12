@@ -7,6 +7,9 @@ import 'package:weatherapp/blocs/theme_bloc.dart';
 import 'package:weatherapp/blocs/weather_bloc.dart';
 import 'package:weatherapp/events/theme_event.dart';
 import 'package:weatherapp/events/weather_event.dart';
+import 'package:weatherapp/screens/city_search_screen.dart';
+import 'package:weatherapp/screens/settings_screen.dart';
+import 'package:weatherapp/screens/temperature_widget.dart';
 import 'package:weatherapp/states/theme_state.dart';
 import 'package:weatherapp/states/weather_state.dart';
 
@@ -33,11 +36,20 @@ class _WeatherScreenState extends State<WeatherScreen> {
           IconButton(
               onPressed: () {
                 //Navigate Setting screen
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SettingsScreen()));
               },
               icon: Icon(Icons.settings)),
           IconButton(
               onPressed: () async {
                 //Navigate to CitySearchScreen
+                final typedCity = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CitySearchScreen()));
+                if(typedCity != null){
+                  BlocProvider.of<WeatherBloc>(context).add(WeatherEventRequest(city: typedCity));
+                }
               },
               icon: Icon(Icons.search))
         ],
@@ -48,13 +60,13 @@ class _WeatherScreenState extends State<WeatherScreen> {
             if (weatherState is WeatherStateSuccess) {
               BlocProvider.of<ThemeBloc>(context).add(ThemeEventWeatherChanged(
                   weatherCondition: weatherState.weather.weatherCondition));
-              _completer?.complete();
+              _completer.complete();
               _completer = Completer();
             }
           },
           builder: (context, weatherState) {
             if (weatherState is WeatherStateLoading) {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
@@ -81,11 +93,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: themeState.textColor),
                             ),
-                            Padding(padding: EdgeInsets.symmetric(vertical: 2)),
+                            const Padding(padding: EdgeInsets.symmetric(vertical: 2)),
                             Center(
                               child: Text(
-                                  'Updated: ${TimeOfDay.fromDateTime(weather.lastUpdated).format(context)}'),
-                            )
+                                  'Updated: ${TimeOfDay.fromDateTime(weather.lastUpdated).format(context)}',style: TextStyle(color: themeState.textColor),),
+                            ),
+                            TemperatureWidget(weather: weather)
                           ],
                         )
                       ],
@@ -95,14 +108,14 @@ class _WeatherScreenState extends State<WeatherScreen> {
               });
             }
             if (weatherState is WeatherStateFailure) {
-              Center(
+              const Center(
                 child: Text(
                   'Something went wrong',
                   style: TextStyle(color: Colors.redAccent, fontSize: 16),
                 ),
               );
             }
-            return Center(
+            return const Center(
               child: Text(
                 'select a location first',
                 style: TextStyle(fontSize: 30),

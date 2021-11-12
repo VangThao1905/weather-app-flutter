@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:weather_icons/weather_icons.dart';
 import 'package:weatherapp/blocs/settings_bloc.dart';
 import 'package:weatherapp/blocs/theme_bloc.dart';
 import 'package:weatherapp/models/Weather.dart';
@@ -18,7 +19,31 @@ class TemperatureWidget extends StatelessWidget {
   String _formattedTemperature(double temp, TemperatureUnit temperatureUnit) =>
       temperatureUnit == TemperatureUnit.fahrenheit
           ? '${_toFahrenheit(temp)}°F'
-          : '${_toFahrenheit(temp)}°C';
+          : '${temp.round()}°C';
+
+  BoxedIcon _mapWeatherConditionToIcon(
+      {required WeatherCondition weatherCondition}) {
+    switch (weatherCondition) {
+      case WeatherCondition.clear:
+      case WeatherCondition.lightCloud:
+        return BoxedIcon(WeatherIcons.day_sunny);
+      case WeatherCondition.hail:
+      case WeatherCondition.snow:
+      case WeatherCondition.sleet:
+        return BoxedIcon(WeatherIcons.snow);
+      case WeatherCondition.heavyCloud:
+        return BoxedIcon(WeatherIcons.cloud_up);
+      case WeatherCondition.heavyRain:
+      case WeatherCondition.lightRain:
+      case WeatherCondition.showers:
+        return BoxedIcon(WeatherIcons.rain);
+
+      case WeatherCondition.thunderstorm:
+        return BoxedIcon(WeatherIcons.thunderstorm);
+      case WeatherCondition.unknow:
+        return BoxedIcon(WeatherIcons.sunset);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +52,8 @@ class TemperatureWidget extends StatelessWidget {
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          _mapWeatherConditionToIcon(
+              weatherCondition: weather.weatherCondition),
           Padding(
               padding: EdgeInsets.symmetric(vertical: 30, horizontal: 10),
               child: BlocBuilder<SettingsBloc, SettingsState>(
